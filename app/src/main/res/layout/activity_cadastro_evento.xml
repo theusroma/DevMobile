@@ -10,30 +10,30 @@
         android:id="@+id/etNome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nome do evento" />
+        android:hint="Mensagem" />
 
     <EditText
         android:id="@+id/etData"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Data" />
+        android:hint="Canal (ex: geral)" />
 
     <EditText
         android:id="@+id/etLocal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Local" />
+        android:hint="Privado para (opcional)" />
 
     <EditText
         android:id="@+id/etDescricao"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Descrição" />
+        android:hint="Nota / anexo (opcional)" />
 
     <Button
         android:id="@+id/btnSalvar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SALVAR"
+        android:text="ENVIAR"
         android:layout_marginTop="16dp" />
 </LinearLayout>

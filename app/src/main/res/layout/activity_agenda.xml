@@ -7,16 +7,45 @@
     android:padding="24dp">
 
     <TextView
+        android:id="@+id/tvHeaderCanal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Minha Agenda"
+        android:text="#geral · / anônimo"
         android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CONECTADOS 0 · ROTA 0 SALTOS"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnRede"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="REDE" />
+
+        <Button
+            android:id="@+id/btnInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="INFO" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnNovoEvento"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="NOVO EVENTO"
+        android:text="NOVA MENSAGEM"
         android:layout_marginTop="20dp" />
 
     <androidx.recyclerview.widget.RecyclerView

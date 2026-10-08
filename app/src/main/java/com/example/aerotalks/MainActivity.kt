@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -15,13 +16,12 @@ class MainActivity : AppCompatActivity() {
         val btnSobre = findViewById<Button>(R.id.btnSobre)
 
         btnComecar.setOnClickListener {
-            Toast.makeText(this, "UP Campus+ iniciado!", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, AgendaActivity::class.java)
-            startActivity(intent)
+            Toast.makeText(this, "inicializando o mesh...", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, AgendaActivity::class.java))
         }
 
-        btnSobre?.setOnClickListener {
-            Toast.makeText(this, "Desenvolvido para UP Campus+", Toast.LENGTH_SHORT).show()
+        btnSobre.setOnClickListener {
+            AndroidChatDialogs.about(this)
         }
     }
 }

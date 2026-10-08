@@ -5,8 +5,15 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Locale
 
+/**
+ * Escrever no mesh. Campos reaproveitados:
+ * etNome = mensagem, etData = canal, etLocal = privado para, etDescricao = nota.
+ * Sem comandos: ENVIAR sempre manda texto simples no canal do campo.
+ */
 class CadastroEventoActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cadastro_evento)
@@ -17,22 +24,36 @@ class CadastroEventoActivity : AppCompatActivity() {
         val etDescricao = findViewById<EditText>(R.id.etDescricao)
         val btnSalvar = findViewById<Button>(R.id.btnSalvar)
 
-        btnSalvar.setOnClickListener {
-            val evento = Evento(
-                nome = etNome.text.toString().trim(),
-                data = etData.text.toString().trim(),
-                local = etLocal.text.toString().trim(),
-                descricao = etDescricao.text.toString().trim()
-            )
+        val canalPre = intent.getStringExtra("canal") ?: "geral"
+        etData.setText("#" + canalPre.removePrefix("#").ifEmpty { "geral" })
 
-            if (evento.nome.isEmpty()) {
-                etNome.error = "Informe o nome"
+        btnSalvar.setOnClickListener {
+            val texto = etNome.text.toString().trim()
+            val canal = etData.text.toString().trim().removePrefix("#").lowercase(Locale.getDefault())
+                .ifEmpty { "geral" }
+            val privadoPara = etLocal.text.toString().trim().removePrefix("@").lowercase(Locale.getDefault())
+                .ifEmpty { null }
+            val nota = etDescricao.text.toString().trim()
+
+            if (texto.isEmpty()) {
+                etNome.error = "Informe a mensagem"
                 return@setOnClickListener
             }
 
-            val banco = BancoHelper(this)
-            banco.inserir(evento)
-            Toast.makeText(this, "Evento salvo!", Toast.LENGTH_SHORT).show()
+            val conteudo = if (nota.isEmpty()) texto else "$texto\n[$nota]"
+            val store = MeshStore(this)
+            store.inserir(
+                Mensagem(
+                    autor = MeshSimulator.eu,
+                    conteudo = conteudo,
+                    canal = canal,
+                    privadoPara = privadoPara,
+                    hora = MeshSimulator.agora(),
+                    minha = true
+                )
+            )
+
+            Toast.makeText(this, "Mensagem enviada", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
