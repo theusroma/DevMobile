@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Anti-clone da identidade (design §3).
+
+    `allowBackup=false` no <application> desliga o Auto Backup em nuvem, mas NAO desliga
+    o device-to-device em alguns OEMs. Por isso o prefs de identidade fica excluido nos DOIS
+    modos: aparelho restaurado herdaria o secret => mesmo peerID => dois nos que nunca
+    conectam (o gate do iniciador e comparacao estrita) e ainda herdam o `verificado` alheio.
+-->
 <data-extraction-rules>
     <cloud-backup>
+        <exclude domain="sharedpref" path="aerotalks_identidade.xml" />
     </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="aerotalks_identidade.xml" />
+    </device-transfer>
 </data-extraction-rules>
