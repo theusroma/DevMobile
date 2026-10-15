@@ -5,10 +5,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-/**
- * Transcrição da conversa, guardada em SQLite só para sobreviver à rotação
- * da tela. A ordem é id ASC para a conversa "descer" como num chat.
- */
 class MeshStore(context: Context) :
     SQLiteOpenHelper(context.applicationContext, "mesh.db", null, 1) {
 

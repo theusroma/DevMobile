@@ -1,6 +1,5 @@
 package com.example.aerotalks
 
-/** Uma linha da transcrição do mesh. */
 data class Mensagem(
     val id: Int = 0,
     val autor: String,

@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.random.Random
 
-/** A sala de chat do mesh: cabeçalho, lista viva e botões. */
 class AgendaActivity : AppCompatActivity() {
 
     private lateinit var store: MeshStore
@@ -24,7 +23,6 @@ class AgendaActivity : AppCompatActivity() {
     private var canalAtual = "geral"
     private var rota = 1
 
-    /** A cada ~4s chega mensagem nova (ou não) e o mesh muda de figura. */
     private val tick = object : Runnable {
         override fun run() {
             rota = Random.nextInt(1, 4)
@@ -60,7 +58,6 @@ class AgendaActivity : AppCompatActivity() {
         rvEventos.layoutManager = LinearLayoutManager(this)
         rvEventos.adapter = adapter
 
-        // primeira vez: semeia a conversa
         if (store.listar().isEmpty()) {
             MeshSimulator.semear().forEach { store.inserir(it) }
         }
@@ -84,7 +81,6 @@ class AgendaActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // pode ter mensagem nova vinda da tela de escrita
         recarregar()
     }
 

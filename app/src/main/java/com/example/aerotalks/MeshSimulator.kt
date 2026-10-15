@@ -5,22 +5,14 @@ import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
 
-/**
- * Finge um mesh local: vizinhos, canais e mensagens que chegam sozinhas.
- * Nada aqui fala com rádio nenhum — é tudo sorteio local.
- */
 object MeshSimulator {
 
-    /** Meu nick no simulador. */
     val eu: String = "voador"
 
-    /** Meu id de nó falso (16 hex). */
     val meuId: String = "a7f31c04be92d518"
 
-    /** Hora atual no formato curto. */
     fun agora(): String = relogio().format(Date())
 
-    /** Hora de "N horas atrás", para a semeadura. */
     fun horasAtras(h: Int): String {
         val cal = java.util.Calendar.getInstance()
         cal.add(java.util.Calendar.HOUR_OF_DAY, -h)
@@ -47,7 +39,6 @@ object MeshSimulator {
         Canal("cripto", dentro = false, membros = 2, protegido = true)
     )
 
-    /** 5 mensagens que "chegaram" antes de a tela abrir. */
     fun semear(): List<Mensagem> = listOf(
         Mensagem(
             autor = "ana",
@@ -101,10 +92,6 @@ object MeshSimulator {
         "meu nó caiu e voltou, tudo certo"
     )
 
-    /**
-     * Chega uma mensagem nova do mesh na maioria das vezes (~70%).
-     * Devolve null quando o mesh fica em silêncio — o canal fica quieto.
-     */
     fun proxima(): Mensagem? {
         if (Random.nextInt(100) >= 70) return null
 

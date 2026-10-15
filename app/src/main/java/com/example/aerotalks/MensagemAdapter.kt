@@ -6,10 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-/**
- * Lista da transcrição. Reaproveita item_evento.xml:
- * tvNomeEvento vira a linha da mensagem, tvDataLocal vira o metadado.
- */
 class MensagemAdapter : RecyclerView.Adapter<MensagemAdapter.MensagemViewHolder>() {
 
     private val mensagens = mutableListOf<Mensagem>()

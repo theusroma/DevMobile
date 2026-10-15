@@ -7,13 +7,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 
-/**
- * Diálogos montados na mão, sem XML: quem está no mesh e o "sobre".
- * Tudo bem tosco de propósito.
- */
 object AndroidChatDialogs {
 
-    /** Diálogo com a lista de vizinhos + canais. */
     fun rede(activity: Activity, peers: List<Peer>, canais: List<Canal>) {
         val raiz = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
@@ -91,7 +86,6 @@ object AndroidChatDialogs {
             .show()
     }
 
-    /** Diálogo "sobre": o que é o AeroTalks. */
     fun about(activity: Activity) {
         val texto = TextView(activity).apply {
             setPadding(40, 24, 40, 8)

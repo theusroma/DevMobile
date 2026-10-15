@@ -7,11 +7,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
 
-/**
- * Escrever no mesh. Campos reaproveitados:
- * etNome = mensagem, etData = canal, etLocal = privado para, etDescricao = nota.
- * Sem comandos: ENVIAR sempre manda texto simples no canal do campo.
- */
 class CadastroEventoActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

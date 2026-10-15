@@ -1,6 +1,5 @@
 package com.example.aerotalks
 
-/** Nó vizinho do mesh (simulado). */
 data class Peer(
     val id: String,
     val nickname: String,

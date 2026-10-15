@@ -1,6 +1,5 @@
 package com.example.aerotalks
 
-/** Canal do mesh. */
 data class Canal(
     val nome: String,
     val dentro: Boolean,
