@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.BluetoothStatusCodes
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
@@ -414,7 +415,12 @@ object BleMesh {
     @Suppress("DEPRECATION")
     private fun escreverRaw(gatt: BluetoothGatt, c: BluetoothGattCharacteristic, frame: ByteArray): Boolean =
         if (Build.VERSION.SDK_INT >= 33) {
-            gatt.writeCharacteristic(c, frame) == BluetoothGatt.GATT_SUCCESS
+            // API 33+: o valor vai no proprio write e o RETORNO E O STATUS (nao Boolean).
+            // WRITE_TYPE_DEFAULT e o mesmo que [escrever] ja deixa na characteristic: e ele que
+            // mantem o eco em `onCharacteristicWrite`, de onde a fila de 1 write em voo tira o
+            // acerto (design §4.8c). NO_RESPONSE nao ecoaria e o emVoo nunca voltaria a null.
+            gatt.writeCharacteristic(c, frame, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) ==
+                BluetoothGatt.GATT_SUCCESS
         } else {
             c.value = frame
             gatt.writeCharacteristic(c)
@@ -464,13 +470,17 @@ object BleMesh {
         val c = comSeguranca("getService(server)") { s.getService(SERVICE_UUID)?.getCharacteristic(CHAR_UUID) }
             ?: return false
         val ok = comSeguranca("notifyCharacteristicChanged(${a.address})") {
-            s.notifyCharacteristicChanged(a.device, c, f, false)
+            // Overload 4-arg (API 33+): o valor vai no proprio notify e o retorno e STATUS.
+            // `false` continua significando fila do GATT cheia.
+            s.notifyCharacteristicChanged(a.device, c, false, f) == BluetoothStatusCodes.SUCCESS
         } ?: false
         a.lastSeen = System.currentTimeMillis()
         return ok
     }
 
-    private inner class ServidorCallback : BluetoothGattServerCallback() {
+    // [ServidorCallback] e [ClienteCallback] sao `class` (nao `inner`): o [BleMesh] ja e um
+    // object/singleton, entao todo o estado abaixo e alcancavel direto pelo nome do object.
+    private class ServidorCallback : BluetoothGattServerCallback() {
 
         override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
             val addr = device?.addressSeguro() ?: return
@@ -492,18 +502,24 @@ object BleMesh {
             device: BluetoothDevice?,
             requestId: Int,
             descriptor: BluetoothGattDescriptor?,
+            preparedWrite: Boolean,
+            responseNeeded: Boolean,
+            offset: Int,
             value: ByteArray?
         ) {
-            val addr = device?.addressSeguro() ?: return
+            val d = device ?: return
+            val addr = d.addressSeguro() ?: return
             val ok = descriptor != null &&
                 descriptor.uuid == CCCD_UUID &&
                 value != null &&
                 value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-            comSeguranca("onDescriptorWriteResponse") {
-                servidor?.onDescriptorWriteResponse(
-                    device,
+            comSeguranca("sendResponse(descriptorWrite)") {
+                servidor?.sendResponse(
+                    d,
                     requestId,
-                    if (ok) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_FAILURE
+                    if (ok) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_FAILURE,
+                    offset,
+                    value
                 )
             }
             val a = estado { assinantes[addr] } ?: return
@@ -515,36 +531,27 @@ object BleMesh {
             }
         }
 
-        @Deprecated("pre-33: abaixo do API 33 so existe esta assinatura")
         override fun onCharacteristicWriteRequest(
             device: BluetoothDevice?,
             requestId: Int,
             characteristic: BluetoothGattCharacteristic?,
             preparedWrite: Boolean,
-            responseNeeded: Boolean
-        ) {
-            @Suppress("DEPRECATION")
-            val v = comSeguranca("characteristic.value") { characteristic?.value } ?: return
-            onCharacteristicWriteRequest(device, requestId, characteristic, v, preparedWrite, responseNeeded)
-        }
-
-        override fun onCharacteristicWriteRequest(
-            device: BluetoothDevice?,
-            requestId: Int,
-            characteristic: BluetoothGattCharacteristic?,
-            value: ByteArray?,
-            preparedWrite: Boolean,
-            responseNeeded: Boolean
+            responseNeeded: Boolean,
+            offset: Int,
+            value: ByteArray?
         ) {
             val addr = device?.addressSeguro()
             val payload = if (characteristic != null && characteristic.uuid == CHAR_UUID) value else null
             val serve = payload != null
-            if (responseNeeded) {
-                comSeguranca("onCharacteristicWriteResponse") {
-                    servidor?.onCharacteristicWriteResponse(
-                        device,
+            val d = device
+            if (responseNeeded && d != null) {
+                comSeguranca("sendResponse(characteristicWrite)") {
+                    servidor?.sendResponse(
+                        d,
                         requestId,
-                        if (serve) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_FAILURE
+                        if (serve) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_FAILURE,
+                        offset,
+                        value
                     )
                 }
             }
@@ -574,9 +581,9 @@ object BleMesh {
             links[peerId] = link
             val gatt = comSeguranca("connectGatt(${link.address})") {
                 // autoConnect=false e TRANSPORT_LE explicito; o overload 4-arg e o unico caminho
-                // para forcar LE no 33+.
+                // para forcar LE no 33+. `connectGatt` e do DEVICE (o adapter nao tem).
                 @Suppress("DEPRECATION")
-                adapter?.connectGatt(ctx, false, ClienteCallback(link), BluetoothDevice.TRANSPORT_LE)
+                device.connectGatt(ctx, false, ClienteCallback(link), BluetoothDevice.TRANSPORT_LE)
             }
             link.gatt = gatt
             if (gatt == null) {
@@ -601,7 +608,7 @@ object BleMesh {
         proximasTentativas.remove(peerId)
     }
 
-    private inner class ClienteCallback(private val link: Link) : BluetoothGattCallback() {
+    private class ClienteCallback(private val link: Link) : BluetoothGattCallback() {
 
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             when (newState) {
@@ -662,20 +669,21 @@ object BleMesh {
         }
 
         override fun onCharacteristicChanged(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic?,
-            value: ByteArray?
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray
         ) {
-            if (characteristic?.uuid != CHAR_UUID || value == null) return
+            if (characteristic.uuid != CHAR_UUID) return
             link.lastSeen = System.currentTimeMillis()
             processar(value, link.peerId)
         }
 
         @Deprecated("pre-33: abaixo do API 33 so existe esta assinatura")
         override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
+            val c = characteristic ?: return
             @Suppress("DEPRECATION")
-            val v = comSeguranca("characteristic.value") { characteristic?.value } ?: return
-            if (characteristic.uuid != CHAR_UUID) return
+            val v = comSeguranca("characteristic.value") { c.value } ?: return
+            if (c.uuid != CHAR_UUID) return
             link.lastSeen = System.currentTimeMillis()
             processar(v, link.peerId)
         }
@@ -697,11 +705,11 @@ object BleMesh {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "UNUSED_PARAMETER")
     private fun escreverCccd(gatt: BluetoothGatt, cccd: BluetoothGattDescriptor, c: BluetoothGattCharacteristic) {
         if (Build.VERSION.SDK_INT >= 33) {
-            cccd.writeDescriptor(c, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-            gatt.writeDescriptor(cccd)
+            // API 33+: valor no proprio write, retorno = status (0 = aceito).
+            gatt.writeDescriptor(cccd, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
         } else {
             cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(cccd)
