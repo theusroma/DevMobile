@@ -3,18 +3,13 @@ package com.example.aerotalks
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 /**
  * Portao do app: BLE → permissao → Bluetooth ligado → apelido → Agenda (design §5).
  */
 class MainActivity : AppCompatActivity() {
-
-    /** O apelido ja foi confirmado nesta sessao? (1o uso mostra o dialog) */
-    private var apelidoConfirmado = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,33 +79,12 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Todos os caminhos do portao desembocam aqui: em vez do AlertDialog de apelido,
+     * agora abre a tela Apelido (SPEC §3/§4). Nada de estado local: a tela sempre aparece.
+     */
     private fun abrirAgenda() {
         IdentidadeStore.iniciar(this)
-        if (apelidoConfirmado) {
-            irParaAgenda()
-            return
-        }
-        val campo = EditText(this).apply {
-            setText(IdentidadeStore.apelido)
-            hint = "Seu apelido no mesh"
-            maxLines = 1
-        }
-        AndroidChatDialogs.mostrar(
-            AlertDialog.Builder(this)
-                .setTitle("Como você quer ser chamado?")
-                .setMessage("Esse nome vai para quem estiver por perto no mesh.")
-                .setView(campo)
-                .setCancelable(false)
-                .setPositiveButton("ENTRAR") { _, _ ->
-                    IdentidadeStore.setApelido(campo.text.toString())
-                    apelidoConfirmado = true
-                    irParaAgenda()
-                }
-                .show()
-        )
-    }
-
-    private fun irParaAgenda() {
-        startActivity(Intent(this, AgendaActivity::class.java))
+        startActivity(Intent(this, ApelidoActivity::class.java))
     }
 }

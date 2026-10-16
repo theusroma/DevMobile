@@ -40,6 +40,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ApelidoActivity"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".AgendaActivity" />
         <activity android:name=".CadastroEventoActivity" />
 
