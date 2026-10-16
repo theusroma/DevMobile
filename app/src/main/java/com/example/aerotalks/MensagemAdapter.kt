@@ -62,13 +62,13 @@ class MensagemAdapter : RecyclerView.Adapter<MensagemAdapter.MensagemViewHolder>
 
         holder.nome.text = msg.conteudo
 
-        // TODO: rotulo "aguardando repasse" e enganoso (nao ha repasse no app) — ver TODO.md
+        // TODO: implementar reenvio quando vizinho aparecer — ver TODO.md
         holder.dataLocal.text = buildString {
             append(msg.hora)
             append(" · ")
             append(if (msg.ehPrivada) "privado → ${msg.privadoPara}" else "#${msg.canal}")
             if (msg.mencao) append(" · menção")
-            if (!msg.entregue) append(" · aguardando repasse")
+            if (!msg.entregue) append(" · reenvio quando vizinho aparecer")
         }
 
         // Largura maxima ~78% da lista: limita os TextViews de dentro do balao.

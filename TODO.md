@@ -2,16 +2,11 @@
 
 Pendências em aberto do AeroTalks. Todo item pendente entra aqui e ganha uma marca `// TODO:` (ou `<!-- TODO: -->`) no ponto do código, terminando com "ver TODO.md". Ao resolver um item, remova também a marca no código.
 
-## Rótulo de entrega ("aguardando repasse")
+## Reenvio quando um vizinho aparecer
 
-Quando uma mensagem é salva sem rota (nenhum vizinho com sinal, ou o vizinho escolhido está fora de alcance), ela fica marcada com "aguardando repasse" para sempre — mas o app não tem mecanismo de repasse, então o rótulo promete algo que não acontece.
+Mensagens salvas sem rota (nenhum vizinho com sinal, ou o vizinho escolhido está fora de alcance) ficam pendentes, e o rótulo na lista comunica "reenvio quando vizinho aparecer" (decidido). Falta implementar o reenvio de fato: tentar enviar de novo quando um vizinho aparecer.
 
-Falta decidir entre:
-
-- **Rótulo honesto**: trocar por um texto que descreva o estado real (ex.: "não enviada" ou "salva localmente");
-- **Reenvio**: tentar enviar de novo quando um vizinho aparecer.
-
-Onde mexe: `MensagemAdapter` (o rótulo) e `AgendaActivity.enviar()` (gravação).
+Onde mexe: `AgendaActivity.enviar()` e `BleMesh` (reenvio); `MensagemAdapter` (rótulo — já atualizado).
 
 ## Fora do escopo por decisão
 

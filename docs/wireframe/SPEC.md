@@ -121,8 +121,8 @@ Cada item (`item_evento.xml`, adaptado) é um **balão**:
 - **Linha de metadados** (mesma regra que `MensagemAdapter` já usa, com a hora na frente):
   - `"{hora} · #{canal}"`, ou `"{hora} · privado → {privadoPara}"` se for privada
   - `+ " · menção"` se `msg.mencao`
-  - `+ " · aguardando repasse"` se `!msg.entregue`
-  - Exemplos do wireframe: `10:42 · #geral`, `10:43 · aguardando repasse`, `10:44 · privado`, `10:45 · #geral · menção`.
+  - `+ " · reenvio quando vizinho aparecer"` se `!msg.entregue`
+  - Exemplos do wireframe: `10:42 · #geral`, `10:43 · reenvio quando vizinho aparecer`, `10:44 · privado`, `10:45 · #geral · menção`.
 
 Mudanças em `MensagemAdapter`:
 
