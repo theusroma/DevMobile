@@ -9,6 +9,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import java.util.Locale
 
 /**
  * Dialogs de REDE e SOBRE (design §5).
@@ -252,5 +253,59 @@ object AndroidChatDialogs {
                 .setPositiveButton("FECHAR", null)
                 .show()
         )
+    }
+
+    /**
+     * Edita o #canal local (SPEC §5.4). O texto e normalizado como no envio local:
+     * `trim`, sem `#`, minusculo e, se vazio, "geral".
+     */
+    fun canal(activity: Activity, atual: String, onConfirmar: (String) -> Unit) {
+        val campo = EditText(activity).apply {
+            setText(atual)
+            maxLines = 1
+            hint = "Canal (ex: geral)"
+        }
+        mostrar(
+            AlertDialog.Builder(activity)
+                .setTitle("Canal")
+                .setView(campo)
+                .setNegativeButton("CANCELAR", null)
+                .setPositiveButton("OK") { _, _ ->
+                    val normalizado = campo.text.toString().trim()
+                        .removePrefix("#")
+                        .lowercase(Locale.getDefault())
+                        .ifEmpty { "geral" }
+                    onConfirmar(normalizado)
+                }
+                .show()
+        )
+    }
+
+    /**
+     * Escolhe o destino privado (SPEC §5.4). Lista de escolha unica: "Ninguem
+     * (mensagem aberta)" + um item por peer; OK confirma a selecao atual (default:
+     * Ninguem). Vizinhos desconectados aparecem e podem ser escolhidos.
+     */
+    fun privado(activity: Activity, peers: List<Peer>, onEscolher: (Peer?) -> Unit) {
+        val itens = mutableListOf("Ninguém (mensagem aberta)")
+        peers.forEach { itens.add("${it.nickname} · ${it.status}") }
+
+        var escolhido = 0 // default: "Ninguem (mensagem aberta)"
+
+        val builder = AlertDialog.Builder(activity)
+            .setTitle("Privado para")
+            .setSingleChoiceItems(itens.toTypedArray(), escolhido) { _, which ->
+                escolhido = which
+            }
+            .setNegativeButton("CANCELAR", null)
+            .setPositiveButton("OK") { _, _ ->
+                onEscolher(if (escolhido == 0) null else peers[escolhido - 1])
+            }
+
+        if (peers.isEmpty()) {
+            builder.setMessage("Nenhum vizinho por perto ainda.")
+        }
+
+        mostrar(builder.show())
     }
 }

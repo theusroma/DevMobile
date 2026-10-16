@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Balão de mensagem enviada (SPEC §5.2): fundo cinza preenchido, sem borda, cantos quadrados.
+  Cores vêm do tema (DayNight) — sem cinzas hardcoded.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="?attr/colorSurfaceVariant" />
+</shape>

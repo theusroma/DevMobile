@@ -1,63 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tela Conversa (SPEC §5.1 + wireframe 03): chat com balões.
+  Estrutura: cabeçalho (título + status | REDE/INFO) → divisória → lista/estado vazio
+  → linha de chips (canal + privado) → barra de envio (campo + ENVIAR).
+  Margens laterais ~16dp (o wireframe da Conversa usa margens menores que 01/02).
+  Widgets padrão do tema; sem cores/fontes hardcoded.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="12dp">
 
-    <TextView
-        android:id="@+id/tvHeaderCanal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="#geral · / anônimo"
-        android:textSize="28sp" />
-
-    <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="CONECTADOS 0 · ROTA 0 SALTOS"
-        android:textSize="14sp" />
-
+    <!-- Cabeçalho: à esquerda, título + status; à direita, REDE e INFO -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <Button
-            android:id="@+id/btnRede"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvHeaderCanal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="#geral · anônimo"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BLE · CONECTADOS 0 · MTU 23"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnRede"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:layout_marginStart="8dp"
             android:text="REDE" />
 
         <Button
             android:id="@+id/btnInfo"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:layout_marginStart="8dp"
             android:text="INFO" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnNovoEvento"
+    <!-- Divisória fina sob o cabeçalho -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="NOVA MENSAGEM"
-        android:layout_marginTop="20dp" />
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="?attr/colorOutlineVariant" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvEventos"
+    <!-- Lista de mensagens (ocupa o espaço restante) + estado vazio -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp" />
+        android:layout_weight="1">
 
-    <Button
-        android:id="@+id/btnVoltar"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvEventos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvVazio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="Nenhuma mensagem ainda."
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Linha de chips (canal + privado), acima da barra de envio -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="VOLTAR" />
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/chipCanal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chip_bg"
+            android:textAllCaps="false"
+            android:text="#geral ▾" />
+
+        <Button
+            android:id="@+id/chipPrivado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/chip_bg"
+            android:textAllCaps="false"
+            android:text="Privado: ninguém ▾" />
+    </LinearLayout>
+
+    <!-- Barra de envio (rodapé): campo de texto + ENVIAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
+
+        <EditText
+            android:id="@+id/etMensagem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Escreva uma mensagem…"
+            android:maxLines="4"
+            android:inputType="textCapSentences|textMultiLine"
+            android:imeOptions="actionSend" />
+
+        <Button
+            android:id="@+id/btnEnviar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="ENVIAR" />
+    </LinearLayout>
 </LinearLayout>

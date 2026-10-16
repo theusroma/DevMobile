@@ -1,20 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Item de mensagem (SPEC §5.2 + wireframe 03): balão.
+  O código ajusta layout_gravity (start/end) e a largura máxima (~78%) no bind.
+  Mensagens enviadas: fundo cinza (@drawable/balao_enviado) e sem linha de autor.
+  Mensagens recebidas: fundo claro com borda (@drawable/balao_recebido) e com autor.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
-    <TextView
-        android:id="@+id/tvNomeEvento"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/balao"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_gravity="start"
+        android:background="@drawable/balao_recebido">
 
-    <TextView
-        android:id="@+id/tvDataLocal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/tvAutor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvNomeEvento"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvDataLocal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary" />
+    </LinearLayout>
 </LinearLayout>

@@ -44,8 +44,9 @@
             android:name=".ApelidoActivity"
             android:windowSoftInputMode="adjustResize" />
 
-        <activity android:name=".AgendaActivity" />
-        <activity android:name=".CadastroEventoActivity" />
+        <activity
+            android:name=".AgendaActivity"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 
