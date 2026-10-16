@@ -62,6 +62,7 @@ class MensagemAdapter : RecyclerView.Adapter<MensagemAdapter.MensagemViewHolder>
 
         holder.nome.text = msg.conteudo
 
+        // TODO: rotulo "aguardando repasse" e enganoso (nao ha repasse no app) — ver TODO.md
         holder.dataLocal.text = buildString {
             append(msg.hora)
             append(" · ")

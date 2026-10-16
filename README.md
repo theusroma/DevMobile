@@ -20,4 +20,5 @@ Requisitos: Android Studio + SDK 37 (compile/target); Android 7.0+ (minSdk 24).
 ## Documentação
 
 - [AGENTS.md](AGENTS.md) — guia do projeto para agentes de código (mapa, convenções, armadilhas).
+- [TODO.md](TODO.md) — próximas tarefas pendentes.
 - [docs/wireframe/SPEC.md](docs/wireframe/SPEC.md) — spec das telas (Início/Apelido/Conversa).

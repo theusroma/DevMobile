@@ -86,6 +86,7 @@ Permissões (`BlePerms` + manifest): **API ≤ 30** → `ACCESS_FINE_LOCATION` e
 - **Strings hardcoded** nos layouts/código é a convenção do repo (não há uso de `strings.xml` além de `app_name`). Não introduzir recursos de string sem necessidade.
 - **`findViewById`** para achar views. Não ligar ViewBinding nem Compose sem motivo forte.
 - **Sem dependências novas sem motivo** (nem CardView, nem bibliotecas de UI).
+- **Item pendente/não funcional** → registrar em `TODO.md` e marcar `// TODO:` (ou `<!-- TODO: -->`) no ponto do código, terminando com "ver TODO.md".
 - Não mexer no protocolo BLE (`BleMesh`, `BleCodec`, `PeerTable`) sem necessidade — há 34 testes JVM que cobrem o codec e devem continuar verdes.
 
 ## 7. Emulador / teste manual
@@ -119,3 +120,4 @@ Não existe auto-teste de UI. A verificação de tela é manual, via `adb` + `ui
 - `docs/wireframe/SPEC.md` — spec das telas do refactor de chat (Início/Apelido/Conversa, chips, envio). Obs.: o texto do SPEC cita `docs/wireframes/` (plural), mas o diretório real é `docs/wireframe/` (singular).
 - `docs/wireframe/01-inicio.png`, `02-apelido.png`, `03-conversa-chat.png` — wireframes: mostram **estrutura e hierarquia**, NÃO cores nem fontes finais.
 - `.slim/deepwork/chat-wireframe/recon-code.md` — mapa de recon **anterior ao refactor**; útil como histórico, mas valide tudo contra o código atual.
+- `TODO.md` — próximas tarefas pendentes (cada item tem marca `TODO` no código).
