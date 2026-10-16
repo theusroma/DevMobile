@@ -8,13 +8,6 @@ import java.security.SecureRandom
 /**
  * Identidade local: secret de 32 B -> peerID, apelido editavel e o par travado
  * (verificado) por prefs. O secret NUNCA trafega e nunca sai do aparelho.
- *
- * Persistencia em SharedPreferences comum (nao EncryptedSharedPreferences): sem deps
- * novas, Keystore quebra em ROMs sem keystore funcional, e o threat model do v1 e
- * "vizinho proximo troca texto" — o secret e identificador publico, nao chave.
- *
- * Anti-clone fica fora daqui: e `allowBackup=false` + `data_extraction_rules`
- * excluindo este prefs (lane A).
  */
 object IdentidadeStore {
 
@@ -104,8 +97,7 @@ object IdentidadeStore {
     /**
      * Codigo de 6 digitos do par (safety number local, NUNCA trafega).
      * Simetrico: os dois lados calculam o mesmo numero em cima dos mesmos dois IDs.
-     * Verdadeiro por construcao so contra MITM que se apresenta com ID proprio —
-     * nao e autenticacao (design §3).
+     * Verdadeiro contra MITM que se apresenta com ID proprio — nao e autenticacao.
      */
     fun codigoPara(peerIdRemoto: String): String = codigoSimetrico(peerId, peerIdRemoto)
 

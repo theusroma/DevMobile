@@ -12,18 +12,12 @@ import androidx.appcompat.app.AlertDialog
 import java.util.Locale
 
 /**
- * Dialogs de REDE e SOBRE (design §5).
- *
- * REDE le a [PeerTable] (lista que a Agenda passa) e a [IdentidadeStore]: meu
- * peerID/apelido editavel e, por peer, nome, status, o codigo de 6 digitos calculado
- * na hora e os botoes de travar/destravar. **Sem secao de canais**: `Canal` nao tem
- * coluna de origem e nada disso trafega.
+ * Todos os dialogs do app: REDE/SOBRE, verificar par, trocar apelido, canal e privado.
  */
 object AndroidChatDialogs {
 
     /**
-     * Divergencia de apelido por peer (R3: o [Peer] nao cresce). Estado LOCAL do
-     * dialog: guarda o apelido visto na ultima abertura e marca quem mudou.
+     * Apelido visto por peer na ultima abertura do dialog (detecta divergencia).
      */
     private val apelidosVistos = HashMap<String, String>()
 
@@ -31,15 +25,9 @@ object AndroidChatDialogs {
     private val abertos = mutableListOf<AlertDialog>()
 
     /**
-     * Registra [dialog] (para o [fechar] alcancar tudo) e devolve o mesmo dialog.
-     *
-     * `onDismiss` chega **depois**: o Android posta a mensagem na main thread, e o positivo
-     * de [verificar] chama [rede] enquanto o proprio [verificar] ainda esta saindo. Por isso
-     * a remocao e **por instancia** (`===`), nunca `clear()` — um `clear()` no listener
-     * apagaria da lista o dialog novo que a [rede] acabou de abrir, que voltaria a vazar
-     * na rotacao.
+     * Registra [dialog] na lista de rastreio e devolve o mesmo dialog. A remocao e
+     * por instancia (`===`), para nao apagar um dialog aberto por outro.
      */
-    /** Todo dialog do app passa por aqui para entrar na lista de rastreio. */
     fun mostrar(dialog: AlertDialog): AlertDialog {
         dialog.setOnDismissListener { abertos.removeAll { d -> d === dialog } }
         abertos.add(dialog)
@@ -58,9 +46,8 @@ object AndroidChatDialogs {
     }
 
     /**
-     * Fecha **todos** os dialogs abertos (rede, sobre, verificar, trocar apelido) e esvazia
-     * a lista. Chame no `onDestroy` das Activities que abrem dialogs: a janela de um
-     * Activity destruido vazava na rotacao (WindowLeaked).
+     * Fecha todos os dialogs abertos e esvazia a lista. Chame no `onDestroy` das
+     * Activities que abrem dialogs.
      */
     fun fechar() {
         val copia = abertos.toList() // o dismiss reentra (onDismiss) e mexe na lista
@@ -69,11 +56,11 @@ object AndroidChatDialogs {
     }
 
     private fun montarRaiz(activity: Activity, peers: List<Peer>): LinearLayout {
-        // O par travado manda no estado: o PeerTable so reaplica isso no proximo ANNOUNCE.
+        // O par travado manda no estado do peer.
         val lista = peers.map { it.copy(verificado = IdentidadeStore.verificado(it.id)) }
         val divergentes = HashMap<String, String>()
 
-        // Poda: quem saiu do alcance nao pode continuar guardando apelido antigo aqui.
+        // Poda quem saiu do alcance.
         apelidosVistos.keys.retainAll(lista.map { it.id })
 
         lista.forEach { peer ->
@@ -256,8 +243,8 @@ object AndroidChatDialogs {
     }
 
     /**
-     * Edita o #canal local (SPEC §5.4). O texto e normalizado como no envio local:
-     * `trim`, sem `#`, minusculo e, se vazio, "geral".
+     * Edita o #canal local. O texto e normalizado: `trim`, sem `#`, minusculo e,
+     * se vazio, "geral".
      */
     fun canal(activity: Activity, atual: String, onConfirmar: (String) -> Unit) {
         val campo = EditText(activity).apply {
@@ -282,9 +269,8 @@ object AndroidChatDialogs {
     }
 
     /**
-     * Escolhe o destino privado (SPEC §5.4). Lista de escolha unica: "Ninguem
-     * (mensagem aberta)" + um item por peer; OK confirma a selecao atual (default:
-     * Ninguem). Vizinhos desconectados aparecem e podem ser escolhidos.
+     * Escolhe o destino privado. Lista de escolha unica: "Ninguem (mensagem aberta)"
+     * + um item por peer; OK confirma a selecao atual (default: Ninguem).
      */
     fun privado(activity: Activity, peers: List<Peer>, onEscolher: (Peer?) -> Unit) {
         val itens = mutableListOf("Ninguém (mensagem aberta)")

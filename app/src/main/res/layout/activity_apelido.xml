@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Tela Apelido (SPEC §4): conteúdo à esquerda, bloco centralizado na vertical.
-  Mesma linguagem dos outros layouts (LinearLayout + widgets padrão do tema).
+  Tela Apelido: conteúdo à esquerda, bloco centralizado na vertical.
+  LinearLayout + widgets padrão do tema.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

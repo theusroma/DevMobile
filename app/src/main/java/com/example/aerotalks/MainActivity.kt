@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * Portao do app: BLE → permissao → Bluetooth ligado → apelido → Agenda (design §5).
+ * Portao do app: BLE → permissao → Bluetooth ligado → apelido → Agenda.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -16,11 +16,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // targetSdk 35+: edge-to-edge imposto — aplica os insets no root (SPEC §5.1).
+        // Insets do sistema no root.
         findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
-        // registerForActivityResult so vale ANTES do onStart: o portao de permissao
-        // precisa do launcher pronto aqui, senao o pedido nao tem retorno.
+        // O launcher de permissao precisa estar registrado antes do onStart.
         BlePerms.preparar(this)
         IdentidadeStore.iniciar(this)
 
@@ -32,8 +31,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        // A janela do dialogo de SOBRE vive num campo estatico: sem isto ela vaza
-        // na rotacao (WindowLeaked).
+        // Fecha os dialogs abertos.
         AndroidChatDialogs.fechar()
         BlePerms.liberar(this)
         super.onDestroy()
@@ -41,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun comecar() {
         if (!BlePerms.suportaBle(this)) {
-            // Sem BLE: avisa e segue — o app funciona so local (read-only).
+            // Sem BLE: avisa e segue read-only.
             Toast.makeText(this, BlePerms.avisoSemBle(), Toast.LENGTH_LONG).show()
             abrirAgenda()
             return
@@ -61,8 +59,7 @@ class MainActivity : AppCompatActivity() {
                     "Sem permissão de Bluetooth o AeroTalks roda só local.",
                     Toast.LENGTH_LONG
                 ).show()
-                // Duas negativas nao podem trancar o usuario fora do app: mesmo caminho
-                // do sem-BLE — aviso e segue para a Agenda (que roda read-only).
+                // Mesmo caminho do sem-BLE: aviso e segue para a Agenda.
                 abrirAgenda()
             }
         }
@@ -84,8 +81,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Todos os caminhos do portao desembocam aqui: em vez do AlertDialog de apelido,
-     * agora abre a tela Apelido (SPEC §3/§4). Nada de estado local: a tela sempre aparece.
+     * Abre a tela Apelido: todos os caminhos do portao desembocam aqui.
      */
     private fun abrirAgenda() {
         IdentidadeStore.iniciar(this)

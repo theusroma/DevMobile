@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Item de mensagem (SPEC §5.2 + wireframe 03): balão.
-  O código ajusta layout_gravity (start/end) e a largura máxima (~78%) no bind.
+  Item de mensagem: balão. O código ajusta layout_gravity (start/end) e a largura
+  máxima (~78%) no bind.
   Mensagens enviadas: fundo cinza (@drawable/balao_enviado) e sem linha de autor.
   Mensagens recebidas: fundo claro com borda (@drawable/balao_recebido) e com autor.
 -->

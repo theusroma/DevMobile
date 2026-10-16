@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Anti-clone da identidade (design §3).
-
-    `allowBackup=false` no <application> desliga o Auto Backup em nuvem, mas NAO desliga
-    o device-to-device em alguns OEMs. Por isso o prefs de identidade fica excluido nos DOIS
-    modos: aparelho restaurado herdaria o secret => mesmo peerID => dois nos que nunca
-    conectam (o gate do iniciador e comparacao estrita) e ainda herdam o `verificado` alheio.
+    Anti-clone da identidade: exclui o prefs de identidade do backup em nuvem e do
+    device-to-device, para o aparelho restaurado nao herdar o secret (mesmo peerID) nem
+    o `verificado` alheio.
 -->
 <data-extraction-rules>
     <cloud-backup>

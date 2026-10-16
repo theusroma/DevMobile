@@ -1,8 +1,7 @@
 package com.example.aerotalks
 
 /**
- * Linha da mesa do mesh (design §5): id, apelido, sinal e o par travado.
- * Sem `favorito` (nunca lido) e sem `hops` (o v1 nao faz relay).
+ * Linha da mesa do mesh: id, apelido, sinal e o par travado.
  */
 data class Peer(
     val id: String,

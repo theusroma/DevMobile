@@ -8,12 +8,8 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * Tela 2 — Apelido (design §4): tela inteira que substitui o AlertDialog
- * "Como você quer ser chamado?" do portão de entrada.
- *
- * Sem regra de validação própria: o vazio continua tratado em
- * [IdentidadeStore.setApelido] (volta para o default). O botão voltar do sistema
- * tem o comportamento padrão (volta para o Início) — não trancamos a tela.
+ * Tela 2 — Apelido. O vazio e tratado em [IdentidadeStore.setApelido]; o botao
+ * voltar do sistema tem o comportamento padrao.
  */
 class ApelidoActivity : AppCompatActivity() {
 
@@ -21,10 +17,10 @@ class ApelidoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_apelido)
 
-        // targetSdk 35+: edge-to-edge imposto — aplica os insets no root (SPEC §5.1).
+        // Insets do sistema no root.
         findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
-        // iniciar antes de ler/escrever o apelido (mesmo padrão das outras telas).
+        // Inicia o store antes de ler/escrever o apelido.
         IdentidadeStore.iniciar(this)
 
         val campo = findViewById<EditText>(R.id.etApelido)
@@ -35,7 +31,7 @@ class ApelidoActivity : AppCompatActivity() {
         btnEntrar.setOnClickListener {
             IdentidadeStore.setApelido(campo.text.toString())
             startActivity(Intent(this, AgendaActivity::class.java))
-            // finish: o botão voltar da Conversa não deve reabrir o apelido.
+            // finish: encerra a tela para o voltar da Conversa nao reabrir o apelido.
             finish()
         }
     }

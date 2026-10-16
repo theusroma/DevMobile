@@ -149,10 +149,10 @@ Mudanças em `MensagemAdapter`:
 5. `saiu = !longaDemais && BleMesh.enviar(texto, privadoPara)`.
 6. Gravar **sempre** em `MeshStore.inserir(Mensagem(autor = IdentidadeStore.apelido, conteudo = texto, canal, privadoPara, hora = agora(), minha = true, entregue = saiu))`.
 7. Toast, mesmos textos de hoje:
-   - `longaDemais` → "Mensagem longa demais (máx {MAX_TEXT} bytes) — guardei só aqui"
+   - `longaDemais` → "Mensagem longa demais (máx {MAX_TEXT} bytes) — salva apenas neste aparelho"
    - `saiu` → "Mensagem enviada"
-   - `privadoPara != null` → "Sem rota para esse vizinho — guardei só aqui"
-   - senão → "Nenhum vizinho com sinal agora — guardei só aqui"
+   - `privadoPara != null` → "Sem rota para esse vizinho — salva apenas neste aparelho"
+   - senão → "Nenhum vizinho com sinal agora — salva apenas neste aparelho"
 8. **Novo, por estar na mesma tela:** limpar `etMensagem`, chamar `recarregar(rolar = true)`. **Não** chamar `finish()`.
 9. Depois de enviar, o chip de privado volta para "Privado: ninguém" (evita mandar a próxima mensagem em privado sem querer). O canal **permanece**.
 
@@ -177,7 +177,7 @@ Dois chips (botões com borda arredondada e `▾`), lado a lado, acima da barra 
   - uma opção por vizinho de `PeerTable.peers()`: `"{nickname} · {status}"` (reusar `Peer.status`)
   - se não houver vizinhos: além da opção "Ninguém", mostrar o texto "Nenhum vizinho por perto ainda." (mesma frase do popup REDE)
 - Escolher um vizinho define `privadoPara = peer.id`.
-- Vizinhos desconectados **aparecem e podem ser escolhidos**; o envio cai no caminho "Sem rota para esse vizinho — guardei só aqui" que já existe.
+- Vizinhos desconectados **aparecem e podem ser escolhidos**; o envio cai no caminho "Sem rota para esse vizinho — salva apenas neste aparelho" que já existe.
 - Todos os popups novos devem passar por `AndroidChatDialogs.mostrar(...)`, para serem fechados em `AndroidChatDialogs.fechar()` no `onDestroy` (evita `WindowLeaked` na rotação).
 
 ### 5.5 Botões do cabeçalho (manter)

@@ -15,7 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 
 /**
- * Portao de permissao e de liga/desliga do Bluetooth (design §4).
+ * Portao de permissao e de liga/desliga do Bluetooth.
  *
  * Regras:
  * - **API 31+**: pede `BLUETOOTH_SCAN` + `BLUETOOTH_CONNECT` + `BLUETOOTH_ADVERTISE` **juntos**,
@@ -26,8 +26,8 @@ import androidx.core.content.ContextCompat
  * - BT desligado -> `ACTION_REQUEST_ENABLE`. Sem BLE no hardware -> toast e app read-only.
  *
  * `registerForActivityResult` so funciona antes do `onStart`: chame [preparar] no `onCreate`
- * da Activity. Sem ele, o pedido de permissao nao tem como voltar, e [iniciarBluetooth] cai no
- * caminho alternativo (receiver de `ACTION_STATE_CHANGED`), que funciona em qualquer momento.
+ * da Activity. Sem ele o pedido de permissao nao tem como voltar e [iniciarBluetooth] cai no
+ * caminho alternativo (receiver de `ACTION_STATE_CHANGED`).
  */
 object BlePerms {
 

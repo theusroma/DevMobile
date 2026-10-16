@@ -23,15 +23,11 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Conversa local + mesh BLE de verdade (design §4/§5).
+ * Conversa local + mesh BLE. Ciclo de vida: [BleMesh.adquirir] no `onStart` e
+ * `BleMesh.liberar` no `onStop`, com o `BroadcastReceiver` da [PeerTable] registrado
+ * e desregistrado no mesmo ciclo.
  *
- * Ciclo: `BleMesh.adquirir` no `onStart`, `BleMesh.liberar` no `onStop` (refcount: o
- * `onStart` da tela que entra chega antes do `onStop` desta), e o
- * `BroadcastReceiver` das duas acoes da [PeerTable] registrado **e desregistrado**
- * no mesmo ciclo — receiver vivo depois do `parar()` reagiria a um mesh desligado.
- *
- * O envio veio da antiga tela de cadastro de evento: campo + chips (#canal / privado)
- * na propria tela, grava sempre no [MeshStore] e manda no fio quando ha rota.
+ * O envio grava sempre no [MeshStore] e manda no fio quando ha rota.
  */
 class AgendaActivity : AppCompatActivity() {
 
@@ -54,8 +50,7 @@ class AgendaActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 PeerTable.ACTION_PEERS_CHANGED -> atualizarCabecalho()
-                // A mensagem ja foi gravada no MeshStore pelo BleMesh: aqui e so
-                // trazer para a lista.
+                // A mensagem ja foi gravada pelo BleMesh: aqui so entra na lista.
                 PeerTable.ACTION_MENSAGEM -> recarregar(rolar = true)
             }
         }
@@ -65,8 +60,7 @@ class AgendaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
 
-        // targetSdk 35+: edge-to-edge imposto — sem isto o rodape fica atras do IME
-        // (adjustResize sozinho nao redimensiona mais; SPEC §5.1 / §10.3).
+        // Insets do sistema no root, para o rodape nao ficar atras do IME.
         findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
         store = MeshStore(this)
@@ -96,9 +90,7 @@ class AgendaActivity : AppCompatActivity() {
         btnInfo.setOnClickListener { AndroidChatDialogs.about(this) }
         btnEnviar.setOnClickListener { enviar() }
 
-        // Enter no teclado tambem envia (SPEC §5.3): o campo e multiline, entao ora o
-        // IME manda a acao, ora um KEYCODE_ENTER — cobrimos os dois. Depois de enviar o
-        // campo esvazia, entao um disparo duplo do mesmo teclado cai no guard de vazio.
+        // Enter no teclado tambem envia: cobre IME_ACTION_SEND e KEYCODE_ENTER.
         etMensagem.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEND ||
                 (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER)
@@ -162,7 +154,7 @@ class AgendaActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        // Desregistra ANTES de derrubar o mesh: assim nao chega evento de um mesh parado.
+        // Desregistra antes de derrubar o mesh.
         if (receiverRegistrado) {
             try {
                 unregisterReceiver(receiver)
@@ -188,7 +180,7 @@ class AgendaActivity : AppCompatActivity() {
     private fun recarregar(rolar: Boolean = false) {
         val todas = store.listar()
         adapter.carregar(todas)
-        // Sem filtro por canal (SPEC §5.2): listar() traz tudo, e o vazio e so a lista vazia.
+        // Sem filtro por canal: listar() traz tudo; vazio = lista vazia.
         tvVazio.visibility = if (todas.isEmpty()) View.VISIBLE else View.GONE
         if (rolar && todas.isNotEmpty()) {
             rvEventos.scrollToPosition(adapter.itemCount - 1)
@@ -203,27 +195,26 @@ class AgendaActivity : AppCompatActivity() {
         tvStatus.text = "BLE · CONECTADOS $conectados · MTU $mtu"
     }
 
-    /** Reflete o estado dos chips (SPEC §5.4): canal e alvo privado. */
+    /** Reflete o estado dos chips: canal e alvo privado. */
     private fun atualizarChips() {
         chipCanal.text = "#$canalAtual ▾"
         chipPrivado.text =
             if (privadoPara != null) "Privado: $privadoNome ▾" else "Privado: ninguém ▾"
     }
 
-    /** Grava sempre local e manda no fio quando ha rota (SPEC §5.3). */
+    /** Grava local e manda no fio quando ha rota. */
     private fun enviar() {
         val texto = etMensagem.text.toString().trim()
         if (texto.isEmpty()) return
 
-        // Checagem dura de bytes: 140 caracteres podem passar do limite de 140 bytes
-        // em acentos/emoji, e o BleMesh recusa sem truncar.
+        // Checagem em BYTES UTF-8: acentos/emoji podem passar de 140 bytes.
         val bytes = texto.toByteArray(Charsets.UTF_8).size
         val longaDemais = bytes > BleMesh.MAX_TEXT
 
         // No fio vai SO o texto: canal e privado continuam locais.
         val saiu = !longaDemais && BleMesh.enviar(texto, privadoPara)
 
-        // Grava SEMPRE (mesmo sem rota/sem sinal): a transcricao local e a fonte da lista.
+        // Grava sempre, mesmo sem rota ou sinal.
         MeshStore(this).inserir(
             Mensagem(
                 autor = IdentidadeStore.apelido,
@@ -239,10 +230,10 @@ class AgendaActivity : AppCompatActivity() {
         Toast.makeText(
             this,
             when {
-                longaDemais -> "Mensagem longa demais (máx ${BleMesh.MAX_TEXT} bytes) — guardei só aqui"
+                longaDemais -> "Mensagem longa demais (máx ${BleMesh.MAX_TEXT} bytes) — salva apenas neste aparelho"
                 saiu -> "Mensagem enviada"
-                privadoPara != null -> "Sem rota para esse vizinho — guardei só aqui"
-                else -> "Nenhum vizinho com sinal agora — guardei só aqui"
+                privadoPara != null -> "Sem rota para esse vizinho — salva apenas neste aparelho"
+                else -> "Nenhum vizinho com sinal agora — salva apenas neste aparelho"
             },
             Toast.LENGTH_LONG
         ).show()
@@ -250,7 +241,7 @@ class AgendaActivity : AppCompatActivity() {
         etMensagem.setText("")
         recarregar(rolar = true)
 
-        // O alvo privado vale para uma mensagem so (SPEC §5.3): volta para "ninguem".
+        // O alvo privado vale para uma mensagem: volta para "ninguem".
         privadoPara = null
         privadoNome = null
         atualizarChips()

@@ -33,22 +33,20 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * Controlador da malha BLE (design §4): advertiser + scanner + GATT client + GATT server.
+ * Controlador da malha BLE: advertiser + scanner + GATT client + GATT server.
  *
- * **Nao e Service** (FGS fora de escopo): objeto ligado ao ciclo de vida da Activity —
- * [iniciar] no `onStart`, [parar] no `onStop`.
+ * **Nao e Service**: objeto ligado ao ciclo de vida da Activity — [iniciar] no `onStart`,
+ * [parar] no `onStop`.
  *
- * Dois papeis, um so wire (design §4.8):
- * - **Cliente** (eu tenho o peerID hex MAIOR): eu conecto e escrevo por `writeCharacteristic`;
- *   o outro lado responde por `notifyCharacteristicChanged`.
- * - **Servidor** (eu tenho o peerID hex MENOR): eu abro o server e NUNCA conecto; anuncio por
- *   notify, e o unicast vai enderecado ao device do peer.
+ * Dois papeis, um so wire:
+ * - **Cliente** (peerID hex MAIOR): conecta e escreve por `writeCharacteristic`; o outro
+ *   lado responde por `notifyCharacteristicChanged`.
+ * - **Servidor** (peerID hex MENOR): abre o server e NUNCA conecta; anuncia por notify, e o
+ *   unicast vai enderecado ao device do peer.
  *
- * Iniciador deterministico (design §2): compara-se a string hex do peerID, nunca o MAC.
- * Sem esse gate os dois lados conectam um no outro (tempestade GATT_133).
+ * Iniciador deterministico: compara-se a string hex do peerID, nunca o MAC.
  *
- * Permissao: TODO `gatt.*` e `device.address` passam por [comSeguranca] — em API 31+ a revogacao
- * de `BLUETOOTH_CONNECT` no meio da sessao crasha se a chamada nao for guardada.
+ * Permissao: todo `gatt.*` e `device.address` passa por [comSeguranca].
  */
 object BleMesh {
 
@@ -66,10 +64,9 @@ object BleMesh {
     val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     /**
-     * 0xFD6F (16-bit) para advertising e filtro de scan.
-     * **Nunca** UUID 128-bit nesses dois campos: 33-47 B estoura os 31 B do advertising e o
-     * advertiser falha em silencio (design §4). O UUID de 128 abaixo e so a forma de
-     * empacotar o valor de 16 bits; o que vai no ar sao 2 bytes.
+     * 0xFD6F (16-bit) para advertising e filtro de scan. Nunca UUID 128-bit nesses
+     * campos: 33-47 B estoura os 31 B do advertising e o advertiser falha em silencio.
+     * O UUID de 128 abaixo e so a forma de empacotar o valor de 16 bits.
      */
     const val SERVICE_DATA_16: Int = 0xFD6F
     private val SERVICE_UUID_16: ParcelUuid =
@@ -80,7 +77,7 @@ object BleMesh {
     /** MTU pedido no cliente. */
     const val MTU_DESEJADO: Int = 517
 
-    /** Abaixo disso o link e INCOMPATIVEL e nem chega a descobrir servico (design §4.6). */
+    /** Abaixo disso o link e INCOMPATIVEL e nem chega a descobrir servico. */
     const val MTU_MINIMO: Int = 173
 
     /** 3 B de overhead ATT por write: `30 + len <= mtu - 3`. */
@@ -89,10 +86,10 @@ object BleMesh {
     /** Teto de payload de MESSAGE — o mesmo do codec. */
     const val MAX_TEXT: Int = BleCodec.MAX_TEXT
 
-    /** Tick de poda/expiracao (design §4.9). */
+    /** Tick de poda/expiracao. */
     const val TICK_MS: Long = 15_000L
 
-    /** Backoff de reconexao 5/15/45 s (Risco 2). */
+    /** Backoff de reconexao 5/15/45 s. */
     private val BACKOFF_MS = longArrayOf(5_000L, 15_000L, 45_000L)
 
     /** LRU anti-duplicata: 64 pares (senderID, timestamp). */
@@ -129,7 +126,7 @@ object BleMesh {
         var mtu: Int = 0
         var maxText: Int = 0
         var lastSeen: Long = System.currentTimeMillis()
-        /** Fila de 1 write em voo por direcao (design §4.8c). */
+        /** Fila de 1 write em voo por direcao. */
         var emVoo: ByteArray? = null
         var reenvios: Int = 0
     }
@@ -218,8 +215,7 @@ object BleMesh {
     fun iniciar(ctx: Context) {
         if (ativo) return
         val app = ctx.applicationContext
-        // Antes de qualquer early-return: sem isto a identidade nunca liga e a lane C
-        // estoura IllegalStateException quando nao ha BLE/adapter/BT desligado.
+        // Antes de qualquer early-return, para a identidade ligar sempre.
         IdentidadeStore.iniciar(app)
         PeerTable.iniciar(app)
         appCtx = app // antes de qualquer uso (meuId() em seguida materializa o secret)
@@ -240,10 +236,8 @@ object BleMesh {
 
         meuId() // materializa o secret antes de anunciar
 
-        // Reinicio rapido (onStop->onStart sem o [parar] no meio): derruba o que sobrou
-        // ANTES de abrir outro GATT server, senao o Android invalida o callback antigo.
-        // Precisa vir antes de `adapter = ad`: [fecharTudo] para scan/advertising com o
-        // adapter velho e depois zera adapter/manager.
+        // Derruba o que sobrou antes de abrir outro GATT server; precisa vir antes de
+        // `adapter = ad`, porque [fecharTudo] para scan/advertising com o adapter velho.
         val sobrou = estado { links.isNotEmpty() || assinantes.isNotEmpty() || conhecidos.isNotEmpty() }
         if (sobrou) fecharTudo()
 
@@ -280,12 +274,8 @@ object BleMesh {
     }
 
     /**
-     * Quantas telas estao usando o mesh ([adquirir] sem [liberar] correspondente).
-     *
-     * O ciclo real do Android NAO e 1:1: ao trocar de Activity a ordem e
-     * `A.onPause -> B.onStart -> A.onStop`, ou seja, o `onStop` da tela que sai chega
-     * DEPOIS do `onStart` da que entra. Parar/iniciar direto por Activity matava a malha
-     * por baixo da tela de escrita. Com refcount o mesh so morre no ultimo [liberar].
+     * Quantas telas estao usando o mesh ([adquirir] sem [liberar]). O mesh so morre no
+     * ultimo [liberar].
      */
     private var donos = 0
 
@@ -322,18 +312,15 @@ object BleMesh {
     /** Quantos links de cliente estao PRONTO. */
     fun prontos(): Int = estado { links.values.count { it.estado == ESTADO_PRONTO } }
 
-    // ----------------------------------------------------------------- envio (R2)
+    // ----------------------------------------------------------------- envio
 
     /**
      * Envia [texto]. [destino] `null` (ou o hex de BROADCAST) = todos os canais abertos.
-     *
-     * **R2 (registrado):** com [destino] preenchido so entrega se o link daquele peer estiver
-     * PRONTO; caso contrario devolve `false` e o chamador mostra "sem rota". Sem relay: nada
-     * sai por um terceiro.
+     * Com [destino] preenchido so entrega se o link daquele peer estiver PRONTO; caso
+     * contrario devolve `false` e o chamador mostra "sem rota". Sem relay.
      *
      * Devolve `true` se o frame entrou em ao menos um caminho (write do cliente ou notify do
-     * servidor). Texto acima de [MAX_TEXT] bytes UTF-8 devolve `false` — nunca trunca em
-     * silencio (design §4).
+     * servidor). Texto acima de [MAX_TEXT] bytes UTF-8 devolve `false`.
      */
     fun enviar(texto: String, destino: String?): Boolean {
         if (!pronto()) return false
@@ -370,11 +357,11 @@ object BleMesh {
             }
         }
 
-        if (unicast && !aceito) Log.w(TAG, "sem rota para $alvo (R2)")
+        if (unicast && !aceito) Log.w(TAG, "sem rota para $alvo")
         return aceito
     }
 
-    /** LEAVE best-effort para todo mundo (design §4.10). */
+    /** LEAVE best-effort para todo mundo. */
     private fun mandarLeave() {
         val meu = meuId() ?: return
         val frame = BleCodec.encode(BleCodec.LEAVE, meuId8(meu), BleCodec.ZEROS, ByteArray(0))
@@ -415,10 +402,9 @@ object BleMesh {
     @Suppress("DEPRECATION")
     private fun escreverRaw(gatt: BluetoothGatt, c: BluetoothGattCharacteristic, frame: ByteArray): Boolean =
         if (Build.VERSION.SDK_INT >= 33) {
-            // API 33+: o valor vai no proprio write e o RETORNO E O STATUS (nao Boolean).
-            // WRITE_TYPE_DEFAULT e o mesmo que [escrever] ja deixa na characteristic: e ele que
-            // mantem o eco em `onCharacteristicWrite`, de onde a fila de 1 write em voo tira o
-            // acerto (design §4.8c). NO_RESPONSE nao ecoaria e o emVoo nunca voltaria a null.
+            // API 33+: o valor vai no proprio write e o retorno e o status (nao Boolean).
+            // WRITE_TYPE_DEFAULT mantem o eco em `onCharacteristicWrite`, de onde a fila de
+            // 1 write em voo tira o acerto.
             gatt.writeCharacteristic(c, frame, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) ==
                 BluetoothGatt.GATT_SUCCESS
         } else {
@@ -526,7 +512,7 @@ object BleMesh {
             if (!ok) return
             estado {
                 a.notificando = true
-                // Bifurcacao dos dois papeis (design §4.8b): o SERVIDOR anuncia por notify.
+                // O SERVIDOR anuncia por notify.
                 anunciar(a) // se a fila estiver cheia, o proximo tick tenta de novo
             }
         }
@@ -596,7 +582,7 @@ object BleMesh {
 
     private val tentativasPorId = HashMap<String, Int>()
 
-    /** Backoff 5/15/45 s por peer (Risco 2). Zera quando o link chega a PRONTO. */
+    /** Backoff 5/15/45 s por peer. Zera quando o link chega a PRONTO. */
     private fun agendarTentativa(peerId: String, agora: Long) {
         val n = tentativasPorId[peerId] ?: 0
         proximasTentativas[peerId] = agora + BACKOFF_MS[n.coerceIn(0, BACKOFF_MS.size - 1)]
@@ -622,8 +608,8 @@ object BleMesh {
         }
 
         override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
-            // GATE PRIMEIRO (design §4.6 / Risco 1): MTU curto deixa o link INCOMPATIVEL e nada
-            // mais e computado — nem maxText, nem discoverServices.
+            // Gate primeiro: MTU curto deixa o link INCOMPATIVEL e nada mais e computado
+            // — nem maxText, nem discoverServices.
             if (mtu < MTU_MINIMO) {
                 link.mtu = mtu
                 link.maxText = 0
@@ -662,7 +648,7 @@ object BleMesh {
                 link.lastSeen = System.currentTimeMillis()
                 zerarTentativas(link.peerId)
                 Log.i(TAG, "link PRONTO com ${link.peerId} (mtu=${link.mtu}, maxText=${link.maxText})")
-                // Bifurcacao dos dois papeis (design §4.8a): o CLIENTE anuncia por write.
+                // O CLIENTE anuncia por write.
                 enfileirarWrite(link, frameAnounce())
             }
             PeerTable.tocar(link.peerId)
@@ -780,8 +766,7 @@ object BleMesh {
     }
 
     /**
-     * Resultado de scan. O peerID vem do serviceData 0xFD6F e **exatamente** 8 B
-     * (nunca parsear payload de tamanho inesperado — design §4).
+     * Resultado de scan. O peerID vem do serviceData 0xFD6F, com exatamente 8 B.
      */
     private fun onAnunciado(result: ScanResult?) {
         val r = result ?: return
@@ -795,7 +780,7 @@ object BleMesh {
         estado {
             rssiPorId[id] = r.rssi
             conhecidos[id] = r.device
-            // Gate do iniciador (design §4.3b): so o dono do peerID MAIOR conecta.
+            // Gate do iniciador: so o dono do peerID maior conecta.
             if (id >= meu) return@estado
             if (links.containsKey(id)) return@estado // ja conectando/conectado
             val agora = System.currentTimeMillis()
@@ -830,7 +815,7 @@ object BleMesh {
         return ok
     }
 
-    /** Decode + regras de aceite, iguais nos dois papeis (design §4.8d). */
+    /** Decode + regras de aceite, iguais nos dois papeis. */
     private fun processar(bytes: ByteArray, origem: String?) {
         val env = BleCodec.decode(bytes)
         if (env == null) {
@@ -887,7 +872,7 @@ object BleMesh {
         PeerTable.peers().firstOrNull { it.id == peerId }?.nickname?.takeIf { it.isNotEmpty() }
             ?: peerId.take(4)
 
-    /** LRU de 64 pares (senderID, timestamp) como cinto-e-suspensorio (design §2). */
+    /** LRU de 64 pares (senderID, timestamp). */
     private fun novoFrame(senderHex: String, ts: Long): Boolean {
         val chave = "$senderHex|$ts"
         synchronized(vistosSet) {
@@ -906,8 +891,7 @@ object BleMesh {
         val agora = System.currentTimeMillis()
         estado {
             links.values.filter { it.estado == ESTADO_DESCONECTADO }.forEach { links.remove(it.peerId) }
-            // Link preso em CONECTANDO/INCOMPATIVEL que nunca mais fala: sem esta poda o
-            // backoff morre com ele (o `conhecidos` nunca chega a reconectar).
+            // Poda link preso em CONECTANDO/INCOMPATIVEL que nunca mais fala.
             links.values.filter { agora - it.lastSeen > 120_000L }.toList()
                 .forEach { fecharLink(it, null) }
             assinantes.values.forEach {

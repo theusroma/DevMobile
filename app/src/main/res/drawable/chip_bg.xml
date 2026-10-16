@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Fundo dos chips de canal/privado (SPEC §5.4): borda fina e cantos bem arredondados.
-  São o único elemento arredondado da tela. Cores do tema (DayNight).
+  Fundo dos chips de canal/privado: borda fina e cantos bem arredondados.
+  Cores do tema (DayNight).
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">

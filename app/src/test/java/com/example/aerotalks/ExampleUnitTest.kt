@@ -9,8 +9,8 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  *
- * Lane B (protocolo/identidade/dados): round-trip do envelope v1, casos hostis
- * do decode (R1: nunca lanca) e simetria do codigo de 6 digitos.
+ * Testes JVM: round-trip do envelope v1, casos hostis do decode (nunca lanca)
+ * e simetria do codigo de 6 digitos.
  */
 class ExampleUnitTest {
     @Test

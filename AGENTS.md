@@ -58,7 +58,7 @@ Modelo:
 Envio de mensagem (`AgendaActivity.enviar()`):
 - Só o **texto cru** cruza o fio. **Canal e privado são rótulos LOCAIS** — não vão no pacote.
 - Checagem dura de **bytes UTF-8**: `bytes > BleMesh.MAX_TEXT` (140) → não envia e **não trunca**.
-- Grava **sempre** no `MeshStore` (mesmo sem rota/sem sinal) e mostra um toast: "Mensagem enviada" / "Sem rota para esse vizinho — guardei só aqui" / "Nenhum vizinho com sinal agora — guardei só aqui" / "Mensagem longa demais … — guardei só aqui".
+- Grava **sempre** no `MeshStore` (mesmo sem rota/sem sinal) e mostra um toast: "Mensagem enviada" / "Sem rota para esse vizinho — salva apenas neste aparelho" / "Nenhum vizinho com sinal agora — salva apenas neste aparelho" / "Mensagem longa demais … — salva apenas neste aparelho".
 - Depois de enviar: limpa o campo, recarrega a lista (rolando até o fim) e o chip de privado volta para "Privado: ninguém" (o canal permanece).
 - Chips: o de canal abre o popup "Canal" (normaliza `trim`, sem `#`, minúsculo, vazio → `geral`); o de privado abre a lista de vizinhos de `PeerTable.peers()`.
 
@@ -105,7 +105,7 @@ Não existe auto-teste de UI. A verificação de tela é manual, via `adb` + `ui
 - **Rotação fecha os popups por design** — o `AndroidChatDialogs.fechar()` roda no `onDestroy` e os dialogs não sobrevivem à mudança de configuração. É esperado e **não gera `WindowLeaked`** (é justamente o que a convenção evita).
 - **Estado de canal/privado da tela não persiste em rotação** — `canalAtual` e `privadoPara` são campos de instância, sem `onSaveInstanceState`. Comportamento esperado hoje.
 - **Teclado/rodapé dependem dos insets**: sem `aplicarInsetsDoSistema()`, o rodapé (chips + barra de envio) fica atrás do IME. Foi bug real, corrigido; não remova a chamada.
-- **Sem BLE no emulador**, o app cai no caminho "sem vizinho": o portão avisa e segue, o header mostra `CONECTADOS 0` e `MTU 0`, e o envio grava local com toast de "guardei só aqui".
+- **Sem BLE no emulador**, o app cai no caminho "sem vizinho": o portão avisa e segue, o header mostra `CONECTADOS 0` e `MTU 0`, e o envio grava local com toast de "salva apenas neste aparelho".
 - Sem link PRONTO, `BleMesh.mtu()` devolve `0` (não os `23` do exemplo no layout).
 - `Canal.kt` existe mas não entra no fluxo do chat (canal é rótulo local, não trafega).
 

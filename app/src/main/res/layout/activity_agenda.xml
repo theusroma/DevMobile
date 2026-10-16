@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Tela Conversa (SPEC §5.1 + wireframe 03): chat com balões.
+  Tela Conversa: chat com balões.
   Estrutura: cabeçalho (título + status | REDE/INFO) → divisória → lista/estado vazio
   → linha de chips (canal + privado) → barra de envio (campo + ENVIAR).
-  Margens laterais ~16dp (o wireframe da Conversa usa margens menores que 01/02).
   Widgets padrão do tema; sem cores/fontes hardcoded.
 -->
 <LinearLayout

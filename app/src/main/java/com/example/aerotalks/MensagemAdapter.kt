@@ -9,8 +9,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 /**
- * Lista de mensagens em baloes (SPEC §5.2). Um so layout de item: o balao vira
- * enviado/recebido no bind, sem dois arquivos XML.
+ * Lista de mensagens em baloes. Um so layout de item: o balao vira enviado/recebido
+ * no bind.
  */
 class MensagemAdapter : RecyclerView.Adapter<MensagemAdapter.MensagemViewHolder>() {
 
@@ -70,9 +70,7 @@ class MensagemAdapter : RecyclerView.Adapter<MensagemAdapter.MensagemViewHolder>
             if (!msg.entregue) append(" · aguardando repasse")
         }
 
-        // Largura maxima ~78% da lista: o balao (LinearLayout) nao tem maxWidth, entao
-        // limitamos os TextViews de dentro — como o balao e wrap_content, ele nao passa
-        // da largura do filho mais largo.
+        // Largura maxima ~78% da lista: limita os TextViews de dentro do balao.
         val largura = (holder.itemView.parent as? View)?.width?.takeIf { it > 0 }
             ?: contexto.resources.displayMetrics.widthPixels
         val maxBalao = (largura * 0.78f).toInt()

@@ -18,8 +18,8 @@ package com.example.aerotalks
  * | 22  | 8   | recipientID  | MESSAGE: FFx8 (broadcast) ou peerID; resto: 00x8       |
  * | 30  | N   | payload      | ver [tlvApelido] / texto UTF-8 cru                    |
  *
- * R1 (anti peer hostil): [decode] NUNCA lanca. Toda rejeicao devolve `null`
- * (nunca `require`/`check`), e toda leitura e sempre precedida deBounds check.
+ * [decode] NUNCA lanca. Toda rejeicao devolve `null` (nunca `require`/`check`),
+ * e toda leitura e sempre precedida de bounds check.
  */
 object BleCodec {
 
@@ -97,8 +97,8 @@ object BleCodec {
      * Monta o envelope. [remetente]/[destinatario] tem de ter exatamente [ID_LEN] bytes.
      *
      * Lanca [IllegalArgumentException] em erro de programacao (tipo fora de 1..3, id com
-     * tamanho errado, payload que nao cabe no envelope). O caller (controlador BLE, lane A) tem de
-     * validar o texto antes — design §4: acima de [MAX_TEXT] vira toast, nunca truncamento silencioso.
+     * tamanho errado, payload que nao cabe no envelope). O caller tem de validar o texto
+     * antes: acima de [MAX_TEXT] e recusado, nunca truncado em silencio.
      */
     fun encode(
         tipo: Int,
@@ -143,7 +143,7 @@ object BleCodec {
      * MESSAGE acima de [MAX_TEXT], LEAVE com payload ou TLV de ANNOUNCE quebrado.
      */
     fun decode(b: ByteArray): Envelope? {
-        // piso e teto ANTES de qualquer leitura por offset (R1)
+        // piso e teto antes de qualquer leitura por offset
         if (b.size < MIN_FRAME || b.size > MAX_FRAME) return null
         if (u(b[OFF_VERSION]) != VERSION) return null
 
