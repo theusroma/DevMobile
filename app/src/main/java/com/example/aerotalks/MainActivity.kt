@@ -2,6 +2,7 @@ package com.example.aerotalks
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +15,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // targetSdk 35+: edge-to-edge imposto — aplica os insets no root (SPEC §5.1).
+        findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
         // registerForActivityResult so vale ANTES do onStart: o portao de permissao
         // precisa do launcher pronto aqui, senao o pedido nao tem retorno.

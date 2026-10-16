@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.InputFilter
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
@@ -63,6 +64,10 @@ class AgendaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agenda)
+
+        // targetSdk 35+: edge-to-edge imposto — sem isto o rodape fica atras do IME
+        // (adjustResize sozinho nao redimensiona mais; SPEC §5.1 / §10.3).
+        findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
         store = MeshStore(this)
 

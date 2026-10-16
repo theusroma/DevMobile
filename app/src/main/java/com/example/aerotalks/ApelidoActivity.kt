@@ -2,6 +2,7 @@ package com.example.aerotalks
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,9 @@ class ApelidoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_apelido)
+
+        // targetSdk 35+: edge-to-edge imposto — aplica os insets no root (SPEC §5.1).
+        findViewById<ViewGroup>(android.R.id.content).getChildAt(0).aplicarInsetsDoSistema()
 
         // iniciar antes de ler/escrever o apelido (mesmo padrão das outras telas).
         IdentidadeStore.iniciar(this)
