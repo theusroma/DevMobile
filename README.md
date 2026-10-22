@@ -4,6 +4,13 @@ Um app de chat para Android que funciona **sem internet**. As mensagens vão de 
 
 > Este é um protótipo acadêmico: as mensagens não são criptografadas.
 
+# Integrantes
+Rebecca Fagundes Beccari
+Matheus Silva dos Santos
+Arthur Soares Padia
+João Gabriel Bender Martins
+
+
 ## Como usar
 
 1. **Início:** toque em COMEÇAR. O app confere se o Bluetooth está disponível e pede as permissões necessárias.
