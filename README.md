@@ -5,10 +5,10 @@ Um app de chat para Android que funciona **sem internet**. As mensagens vão de 
 > Este é um protótipo acadêmico: as mensagens não são criptografadas.
 
 # Integrantes
-1. Rebecca Fagundes Beccari
-2. Matheus Silva dos Santos
-3. Arthur Soares Padia
-4. João Gabriel Bender Martins
+- Rebecca Fagundes Beccari
+- Matheus Silva dos Santos
+- Arthur Soares Padia
+- João Gabriel Bender Martins
 
 
 ## Como usar
